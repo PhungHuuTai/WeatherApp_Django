@@ -9,7 +9,6 @@ import json
 # from django.contrib.sites.shortcuts import get_current_site
 # from django.utils.crypto import get_random_string
 
-
 API_KEY = settings.API_KEY
 API_URL = settings.API_URL
 # Create your views here.
@@ -52,6 +51,31 @@ def home(request):
     return render(request, 'index.html', {'form': form})
 
 
+
+def load_more_forecast(request, city, days):
+    try:
+        response = requests.get(f"{API_URL}/forecast.json?key={API_KEY}&q={city}&days={days}")
+        response.raise_for_status()
+        data = response.json()
+
+        if 'error' in data:
+            return render(request, 'error.html', {
+                'error_message': data['error']['message']
+                })
+
+        forecast = data['forecast']['forecastday']
+        next_days = days + 3  # Số ngày dự báo sẽ tăng thêm mỗi khi load more
+        return render(request, 'forecast.html', {
+            'forecast': forecast, 
+            'city': city, 
+            'next_days': next_days
+            })
+
+    except requests.exceptions.RequestException as e:
+        error_message = f"An error occurred: {e}"
+        return render(request, 'error.html', {
+            'error_message': error_message
+            })
 
 # def subscribe(request):
 #     if request.method == 'POST':

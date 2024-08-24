@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Weather Forecast for {{ city }}</h2>
+        <div class="row mt-4">
+            {% for day in forecast %}
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ day.date }}</h5>
+                            <p class="card-text">Temp: {{ day.day.avgtemp_c }}°C</p>
+                            <p class="card-text">Wind: {{ day.day.maxwind_kph }} km/h</p>
+                            <p class="card-text">Humidity: {{ day.day.avghumidity }}%</p>
+                            <p class="card-text">Condition: {{ day.day.condition.text }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="text-center">
+            <a href="{% url 'load_more_forecast' city=city days=next_days %}" class="btn btn-primary">Load More</a>
+        </div>
+        <a href="{% url 'home' %}" class="btn btn-primary">Go Back</a>
+    </div>
+</body>
+</html>

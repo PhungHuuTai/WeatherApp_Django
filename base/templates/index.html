@@ -31,8 +31,9 @@
             <p>Description: {{ current_weather.description }}</p>
             <img src="{{ current_weather.icon }}" alt="{{ current_weather.description }}">
         </div>
+
         <h3 class="mt-5">4-Day Forecast</h3>
-        <div class="row">
+        <div id="forecast-container" class="row">
             {% for day in forecast_weather %}
             <div class="col-md-3">
                 <h4>{{ day.date }}</h4>
@@ -43,9 +44,32 @@
             </div>
             {% endfor %}
         </div>
-        <button id="load-more-btn" class="btn btn-primary mt-3">Load more</button>
+        <div class="text-center">
+            <a href="{% url 'load_more_forecast' city=current_weather.city days=8 %}" class="btn btn-primary">Load
+                More</a>
+        </div>
         {% endif %}
     </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#use-current-location').on('click', function() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        $.get(`/weather_by_location?lat=${lat}&lon=${lon}`, function(data) {
+                            $('body').html(data); // Replace entire body with the new content
+                        });
+                    }, function(error) {
+                        alert('Unable to retrieve your location. Please allow location access.');
+                    });
+                } else {
+                    alert('Geolocation is not supported by this browser.');
+                }
+            });
+        });
+    </script> 
 </body>
 
 </html>
