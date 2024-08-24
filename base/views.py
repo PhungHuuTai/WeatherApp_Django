@@ -18,20 +18,20 @@ def home(request):
         if form.is_valid():
             city = form.cleaned_data['city']
             response = requests.get(f"{API_URL}/current.json?key={API_KEY}&q={city}")
-            print
             forecast_response = requests.get(f"{API_URL}/forecast.json?key={API_KEY}&q={city}&days=5")
             if response.status_code == 200:
                 data = response.json()
                 forecast_data = forecast_response.json()
                 current_weather = {
                     'city': data['location']['name'],
+                    'date': data['location']['localtime'],
                     'temperature': data['current']['temp_c'],
                     'wind_speed': data['current']['wind_kph'],
                     'humidity': data['current']['humidity'],
                     'description': data['current']['condition']['text'],
                     'icon': data['current']['condition']['icon']
                 }
-                forecast_weather = forecast_data['forecast']['forecastday']
+                forecast_weather = forecast_data['forecast']['forecastday'][1:]
                 # Save weather history
                 WeatherHistory.objects.create(
                     city=current_weather['city'],
@@ -45,12 +45,40 @@ def home(request):
                     'forecast_weather': forecast_weather,
                     'form': form
                 }
-                return render(request, 'index.html', context)
+                return render(request, 'home.html', context)
     else:
         form = WeatherSearchForm()
-    return render(request, 'index.html', {'form': form})
+    return render(request, 'home.html', {'form': form})
 
-
+def weather_by_location(request):
+    lat = request.GET.get('lat')
+    lon = request.GET.get('lon')
+    if lat and lon:
+        response = requests.get(f"{API_URL}/forecast.json?key={API_KEY}&q={lat},{lon}&days=5")
+        if response.status_code == 200:
+            weather_data = response.json()
+            current_weather = {
+                'city': weather_data['location']['name'],
+                'date': weather_data['location']['localtime'],
+                'temperature': weather_data['current']['temp_c'],
+                'wind_speed': weather_data['current']['wind_kph'],
+                'humidity': weather_data['current']['humidity'],
+                'description': weather_data['current']['condition']['text'],
+                'icon': weather_data['current']['condition']['icon']
+            }
+            forecast_weather = weather_data['forecast']['forecastday'][1:]
+            return render(request, 'home.html', {
+                'current_weather': current_weather, 
+                'forecast_weather': forecast_weather
+                })
+        else:
+            return render(request, 'error.html', {
+                'error_message': 'Unable to retrieve weather data. Please try again.'
+                })
+    else:
+        return render(request, 'error.html', {
+            'error_message': 'Location not provided.'
+            })
 
 def load_more_forecast(request, city, days):
     try:
@@ -64,7 +92,7 @@ def load_more_forecast(request, city, days):
                 })
 
         forecast = data['forecast']['forecastday']
-        next_days = days + 3  # Số ngày dự báo sẽ tăng thêm mỗi khi load more
+        next_days = days + 3 
         return render(request, 'forecast.html', {
             'forecast': forecast, 
             'city': city, 

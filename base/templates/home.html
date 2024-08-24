@@ -1,0 +1,146 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #E9F0F5;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            margin-top: 50px;
+        }
+
+        .weather-card {
+            background-color: #87A2FB;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .forecast-card {
+            background-color: #c3c9e9;
+            color: black;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 5px;
+        }
+
+        .forecast-card p {
+            margin: 5px 5px;
+        }
+
+        .btn-block {
+            margin-top: 10px;
+        }
+
+        h1 {
+            color: #3a3a3a;
+        }
+
+        .btn-secondary {
+            margin-top: 10px;
+        }
+    </style>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">Weather Dashboard</h1>
+
+        <!-- Search Section -->
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <form method="post" action="{% url 'home' %}">
+                    {% csrf_token %}
+                    <div class="input-group mb-3">
+                        <input type="text" name="city" class="form-control" placeholder="E.g., New York, London, Tokyo"
+                            aria-label="City" required>
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="submit">Search</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="text-center">
+                    <span>or</span>
+                </div>
+                <button id="currentLocationBtn" class="btn btn-secondary btn-block">Use Current Location</button>
+            </div>
+        </div>
+
+        <!-- Current Weather Section -->
+        {% if current_weather %}
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-6 weather-card">
+                <h3>{{ current_weather.city }} ({{ current_weather.date }})</h3>
+                <p>Temperature: {{ current_weather.temperature }}°C</p>
+                <p>Wind: {{ current_weather.wind_speed }} M/S</p>
+                <p>Humidity: {{ current_weather.humidity }}%</p>
+                <div>
+                    <img src="http:{{ current_weather.icon }}" alt="Weather icon">
+                    <span>{{ current_weather.description }}</span>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- 4-Day Forecast Section -->
+        {% if forecast_weather %}
+        <div class="mt-4">
+            <h3 class="text-center">4-Day Forecast</h3>
+            <div class="row forecast-container">
+                {% for day in forecast_weather %}
+                <div class="col-md-3 mb-3">
+                    <div class="forecast-card">
+                        <h5>{{ day.date }}</h5>
+                        <img src="http:{{ day.day.condition.icon }}" alt="Weather icon">
+                        <p>Temp: {{ day.day.avgtemp_c }}°C</p>
+                        <p>Wind: {{ day.day.maxwind_kph }} M/S</p>
+                        <p>Humidity: {{ day.day.avghumidity }}%</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="text-center">
+                <a href="{% url 'load_more_forecast' city=current_weather.city days=8 %}" class="btn btn-primary">Load
+                    More</a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Error Section -->
+        {% if error_message %}
+        <div class="alert alert-danger mt-4 text-center" role="alert">
+            {{ error_message }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Script to get current location -->
+    <script>
+        document.getElementById('currentLocationBtn').addEventListener('click', function () {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    window.location.href = `{% url 'weather_by_location' %}?lat=${lat}&lon=${lon}`;
+                }, function (error) {
+                    alert('Unable to retrieve your location.');
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        });
+    </script>
+</body>
+
+</html>
