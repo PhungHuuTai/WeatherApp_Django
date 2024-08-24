@@ -1,0 +1,81 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e0ebf1;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+    background-color: #4360df;
+    color: #ffffff;
+    text-align: center;
+    padding: 15px;
+    border-radius: 8px 8px 0 0;
+}
+
+.weather-info {
+    background-color: #789ef4;
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.forecast {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 20px;
+}
+
+.forecast div {
+    background-color: #cdd7e3;
+    padding: 10px;
+    border-radius: 8px;
+    width: 20%;
+    text-align: center;
+}
+
+input[type="text"], button {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-top: 10px;
+}
+
+button {
+    background-color: #4360df;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #324aad;
+}
+
+.bg-\[url\(\'\.\/images\/bg_image\.jpg\'\)\] {
+    background-image: url('./images/bg_image.jpg');
+}
+  
+.bg-cover {
+background-size: cover;
+}
+
+.bg-center {
+background-position: center;
+}
+
+.bg-no-repeat {
+background-repeat: no-repeat;
+}
