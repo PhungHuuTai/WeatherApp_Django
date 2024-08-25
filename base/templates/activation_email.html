@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Activate your weather subscription</title>
+</head>
+<body>
+    <p>Hi,</p>
+    <p>Please click on the link below to confirm your subscription to daily weather updates:</p>
+    <a href="http://{{ domain }}{% url 'activate' uidb64=uid token=token %}">Activate your account</a>
+    <p>If you did not request this subscription, please ignore this email.</p>
+</body>
+</html>

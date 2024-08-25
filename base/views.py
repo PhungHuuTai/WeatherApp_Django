@@ -1,13 +1,20 @@
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from .forms import WeatherSearchForm, EmailSubscriptionForm
 from .models import WeatherHistory, EmailSubscription
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib import messages
 from django.conf import settings
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+# from django.contrib.auth.tokens import default_token_generator as token_generator
+from .tokens import EmailConfirmationTokenGenerator
 import requests
 import json
 
-# from django.contrib.sites.shortcuts import get_current_site
-# from django.utils.crypto import get_random_string
+token_generator = EmailConfirmationTokenGenerator()
 
 API_KEY = settings.API_KEY
 API_URL = settings.API_URL
@@ -105,35 +112,66 @@ def load_more_forecast(request, city, days):
             'error_message': error_message
             })
 
-# def subscribe(request):
-#     if request.method == 'POST':
-#         form = EmailSubscriptionForm(request.POST)
-#         if form.is_valid():
-#             email = form.cleaned_data['email']
-#             confirmation_code = get_random_string(length=32)
-#             subscription = EmailSubscription(email=email, confirmation_code=confirmation_code)
-#             subscription.save()
-#             current_site = get_current_site(request)
-#             confirmation_link = f"http://{current_site.domain}/confirm/{confirmation_code}"
-#             send_mail(
-#                 'Confirm your subscription',
-#                 f'Please confirm your subscription by clicking the link: {confirmation_link}',
-#                 settings.EMAIL_HOST_USER,
-#                 [email],
-#                 fail_silently=False,
-#             )
-#             return redirect('home')
-#     else:
-#         form = EmailSubscriptionForm()
-#     return render(request, 'weather/subscribe.html', {'form': form})
+def subscribe(request):
+    if request.method == 'POST':
+        form = EmailSubscriptionForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            subscription, created = EmailSubscription.objects.get_or_create(email=email)
+            if created or not subscription.is_confirmed:
+                subscription.save()
+                
+                token = token_generator.make_token(subscription)
+                uid = urlsafe_base64_encode(force_bytes(subscription.pk))
+                current_site = get_current_site(request)
+                mail_subject = 'Activate your account'
+                http_content = render_to_string('activation_email.html', {
+                    'user': subscription,
+                    'domain': current_site.domain,
+                    'uid': uid,
+                    'token': token,
+                })
+                msg = EmailMessage(mail_subject, http_content, settings.EMAIL_HOST_USER, [subscription.email])
+                msg.content_subtype = 'html'
+                msg.send()
 
-# def confirm_subscription(request, confirmation_code):
-#     try:
-#         subscription = EmailSubscription.objects.get(confirmation_code=confirmation_code, is_confirmed=False)
-#         subscription.is_confirmed = True
-#         subscription.save()
-#         # Send a welcome email or some sort of notification
-#     except EmailSubscription.DoesNotExist:
-#         # Handle invalid confirmation code
-#         pass
-#     return redirect('home')
+                return render(request, 'confirmed.html', {
+                    'message': 'Please confirm your email address to complete the registration.'
+                    })
+            elif subscription.is_confirmed:
+                return render(request, 'confirmed.html', {
+                    'message': 'You are already subscribed and confirmed.'
+                    })
+            else:
+                return render(request, 'confirmed.html', {
+                    'message': 'This email is already registered but not confirmed. Please check your inbox for the confirmation email.'
+                })
+    else:
+        form = EmailSubscriptionForm()
+    return render(request, 'subscribe.html', {'form': form})
+
+def activate(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        subscription = EmailSubscription.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, EmailSubscription.DoesNotExist):
+        subscription = None
+
+    if subscription is not None and token_generator.check_token(subscription, token):
+        subscription.is_confirmed = True
+        subscription.save()
+        return render(request, 'confirmed.html', {'message': 'Your email has been confirmed!'})
+    else:
+        return render(request, 'confirmed.html', {'message': 'Activation link is invalid!'})
+
+def unsubscribe(request):
+    if request.method == 'POST':
+        email = request.POST['email']
+        subscription = EmailSubscription.objects.filter(email=email).first()
+        if subscription:
+            subscription.delete()
+            messages.success(request, 'You have successfully unsubscribed.')
+        else:
+            messages.error(request, 'Email not found or already unsubscribed.')
+        return redirect('home')
+    return render(request, 'unsubscribe.html')

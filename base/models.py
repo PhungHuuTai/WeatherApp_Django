@@ -7,7 +7,7 @@ class WeatherHistory(models.Model):
     temperature = models.FloatField()
     wind_speed = models.FloatField()
     humidity = models.IntegerField()
-    date = models.DateField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Weather in {self.city} on {self.date}"
@@ -15,7 +15,6 @@ class WeatherHistory(models.Model):
 class EmailSubscription(models.Model):
     email = models.EmailField(unique=True)
     is_confirmed = models.BooleanField(default=False)
-    confirmation_code = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
         return self.email
