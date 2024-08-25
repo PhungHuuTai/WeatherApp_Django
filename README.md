@@ -10,14 +10,12 @@ This is a Django-based web application that provides weather information for a c
 - **Deploy to Live Server**: Instructions to deploy the application live are provided.
 
 ## Tech Stack
-
 - **Backend**: Django, Python
 - **Frontend**: HTML, CSS, JavaScript (for geolocation)
 - **Database**: SQLite
 - **APIs**: 'https://www.weatherapi.com'
 
 ## Prerequisites
-
 - Python 3.10.7
 - pip (Python package manager) in requirements.txt
 - Django
@@ -29,15 +27,12 @@ This is a Django-based web application that provides weather information for a c
 ```bash
 python -m venv env
 env\Scripts\activate
-cd env
 ```
 
 ### 2. Clone the repository
-
 ```bash
 git clone https://github.com/PhungHuuTai/WeatherApp_Django.git
 ```
-
 
 ### 3. Install dependencies
 Install the required Python packages using pip:
@@ -47,6 +42,7 @@ pip install -r requirements.txt
 
 ### 4. Configure environment variables
 Create a .env file in the root of your project and add the following:
+```
 SECRET_KEY=your_django_secret_key
 ALLOWED_HOSTS=localhost,127.0.0.1
 EMAIL_HOST=smtp.your-email-provider.com
@@ -56,7 +52,7 @@ EMAIL_HOST_PASSWORD=your-email-password
 EMAIL_USE_TLS=True
 API_KEY=your_weather_api_key
 API_URL=http://api.weatherapi.com/v1
-
+```
 Replace placeholders with your actual configuration values.
 
 ### 5. Apply migrations
@@ -78,7 +74,7 @@ Visit http://127.0.0.1:8000/ to access the application.
 - ### 4. Unsubscribe: Option to unsubscribe from daily weather emails.
 
 ## Demo
-A live demo of the application is available at: https://drive.google.com/file/d/1Z_VrI1HoobmW2kJd3pxMZAw0a_N7MVi8/view?usp=sharing
+A live demo of the application is available at: ***https://drive.google.com/file/d/1Z_VrI1HoobmW2kJd3pxMZAw0a_N7MVi8/view?usp=sharing***
 
 ## Deploy on PythonAnywhere 
 ### 1.Sign Up or Log In
@@ -127,4 +123,5 @@ If your application uses environment variables (like API keys), add them in the 
 ### 7.Reload Your Web App:
 - After making all the configurations, go to the Web tab and click the Reload button for your web application.
 
-## NOW ACCESS MY APPLICATION in: https://huutai.pythonanywhere.com/
+## NOW ACCESS MY APPLICATION in: 
+***https://huutai.pythonanywhere.com/***
